@@ -15,6 +15,6 @@ follow:
     github:       https://github.com/wulijun
 
 
-style: 			  /css/style.css
+style: 			 /css/style.css
 blogName: 		  风之缘
-blogDesc: 		 "PHP语言、PHP扩展和JavaScript等Web开发相关的研究，技术，新闻分享"
+blogDesc: 		 "PHP语言,PHP扩展,JavaScript等Web开发相关的研究,技术,新闻分享"

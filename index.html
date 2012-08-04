@@ -1,30 +1,35 @@
 ---
-layout:           default
-titlef:           index
+layout: default
 ---
-<header id="prefile">
-    <h2>I'm PIZn.</h2>
-    <p></p>
-</header>
-<article id="post-list">
-    <h3>My GitHub Posts List</h3>
-    <ul class="posts">
-        {% for post in paginator.posts  %}
-        <li><span>{{ post.date | date_to_string }}</span> &raquo; <a href="{{ post.url }}" title="{{ post.title }}" rel="bookmark">{{ post.title }}</a></li>
-        {% endfor %}
-    </ul>
-    {% if paginator.total_pages > 1 %}
-        <nav id="pagination">
-            <span class="pages">Pages:&nbsp;</span>
-            <div class="paginator-list">
-                {% for page in (1..paginator.total_pages) %}
-                    {% if page == paginator.page %}
-                        <span class="num">{{ page }}</span>
-                    {% else %}
-                        <a class="num" href="/{%if page > 1 %}page{{ page }}/{% endif %}">{{ page }}</a>
-                    {% endif %}
-                {% endfor %}
-            </div>
-        </nav>
-    {% endif %}
-</article>
+<section class="content">
+	<div class="content-cnt fn-clear">
+		<div class="main fn-clear">
+			{% for rpost in paginator.posts %}
+            	<article class="main-excerpt fn-clear">
+                    <h3 class="main-excerpt-title"><a href="{{ rpost.url }}" title="{{ rpost.title }}" rel="bookmark">{{ rpost.title }}</a></h3>
+                    <p class="date"><time pubdate="{{ rpost.date }}">{{ rpost.date | date_to_string }}</time></p>
+                    <p>{{ rpost.description }}</p>
+                   	<p class="more"><a href="{{ rpost.url }}" title="Read More" rel="nofollow"><span>&#10149;</span>Read More</a></p>
+                </article>
+            {% endfor %}
+            {% if paginator.total_pages > 1 %}
+		        <nav id="pagination">
+		            <ul class="pagination">
+		                {% for page in (1..paginator.total_pages) %}
+		                    {% if page == paginator.page %}
+		                        <li class="current"><a href="javascript:void(0);">{{ page }}</a></li>
+		                    {% else %}
+		                        <li><a href="/{%if page > 1 %}page{{ page }}/{% endif %}">{{ page }}</a></li>
+		                    {% endif %}
+		                {% endfor %}
+		            </ul>
+		        </nav>
+		    {% endif %}			
+		</div>
+		<div class="aside fn-clear">
+			{% include wg-contact.html %}
+			{% include wg-project.html %}
+			{% include wg-other.html %}
+		</div>
+	</div>
+</section>

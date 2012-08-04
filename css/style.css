@@ -87,8 +87,8 @@ body                        { background: url(/images/body-bg.jpg) repeat 0 0; }
 .content-cnt .aside         { float: left; width: 249px; height: auto; color: #d8d8d8; }
 .content-cnt .aside .box    { padding: 20px 10px; margin: 10px 0 20px 0; background: url(/images/bg.png) repeat 0 0; box-shadow: 1px 2px 4px #000 inset; border-radius: 8px 8px; height: auto; }
 .content-cnt .aside .box img 
-                            { width: 230px; height: 230px; }
-.content-cnt .aside .box p  { line-height: 20px; padding-top: 10px; } 
+                            { width: 50px; height: 50px; float:left}
+.content-cnt .aside .box p  { line-height: 15px; padding-top: 5px; margin-left: 4.5em;} 
 .content-cnt .aside .box .title 
                             { font-size: 14px; line-height: 24px; border-bottom: 1px dashed #888; font-family: Georgia; font-style: italic; }
 .content-cnt .aside .box ul { padding: 10px 0 0; }

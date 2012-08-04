@@ -10,7 +10,7 @@ author:
     email:        wulijun01234@gmail.com
 description:      "风之缘的博客，主要分享关于PHP语言, PHP扩展, Zend引擎, PHP Runtime，JavaScript等Web开发相关技术,新闻和最新动态，以及记录对互联网行业的思考和分析。"
 keywords: "PHP,PHP源码分析,PHP扩展,PHP扩展开发,PHP教程,PHP扩展开发教程,PHP内核,PHP内核分析,PHP Runtime,Zend,Zend Engine,PHP Extension,Javascript,CSS,LAMP,风之缘,wulijun01234"
-about: 			  "PHP开发者，关注Nginx、PHP和Redis等Web开发技术的发展和应用"
+about: 			  "PHP开发者,关注Nginx,PHP等Web开发技术的发展与应用"
 follow:
     github:       https://github.com/wulijun
 

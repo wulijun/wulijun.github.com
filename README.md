@@ -1,13 +1,3 @@
-###主题介绍
+###我的博客
+记录自己的技术文章
 
-* version :  1.0
-* name    :  Black Cube Theme
-* color   :  black
-* create  :  2012-04-25
-* author  :  PIZn
-* support :  index, archives, contact
-
-###Other
-
-这是一款黑色主题，目前支持 3 个页面，分别是 index.html, archives.html,
-contact.html。

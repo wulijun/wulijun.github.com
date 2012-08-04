@@ -28,6 +28,8 @@ ins,a                       { text-decoration:none; }
 /*--------------------------------------------
                 function
 --------------------------------------------*/
+/*html5*/
+article,aside,dialog,footer,header,section,footer,nav,figure,menu{display:block}
 .fn-clear:after             { visibility:hidden; display:block; font-size:0; content:" "; clear:both; height:0; }
 .fn-clear                   { zoom:1; /* for IE6 IE7 */ }
 body .fn-hide               { display:none; }

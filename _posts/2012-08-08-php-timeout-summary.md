@@ -1,7 +1,7 @@
 ---
 layout: post
-title: [转]PHP超时处理全面总结
-description: PHP中的超时都是分门别类，各个处理方式和策略都不同，为了系统的描述，我总结了PHP中常用的超时处理的总结。
+title: "[转]PHP超时处理全面总结"
+description: "PHP中的超时都是分门别类，各个处理方式和策略都不同，为了系统的描述，我总结了PHP中常用的超时处理的总结。"
 tags: PHP
 ---
 

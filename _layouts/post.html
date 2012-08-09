@@ -6,8 +6,10 @@ layout: default
 		<div class="main fn-clear">
 			<article class="entry">
 				<h1 class="title">{{ page.title }}</h1>
-               	<p class="meta"><time class="date" pubdate="{{ page.date | date_to_utc | date: '%Y-%m-%d' }}">{{ page.date | date_to_string }}</time> By <a href="/contact.html" class="author" title="author">{{ site.author.name }}</a><g:plusone size="small"></g:plusone></p>
+               	<p class="meta"><time class="date" pubdate="{{ page.date | date_to_utc | date: '%Y-%m-%d' }}">{{ page.date | date_to_string }}</time> By <a href="/contact.html" class="author" title="author">{{ site.author.name }}</a></p>
+               	{% if page.description %}
                	<p class="description">{{ page.description }}</p>
+               	{% endif %}
  			 	{{ content }}
                 <nav class="pagination-link">
                     {% if page.previous %}

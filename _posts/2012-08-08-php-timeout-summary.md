@@ -245,6 +245,7 @@ if (!isset($_GET['foo'])) {
 ?> 
 {% endhighlight %} 
 其他一些技巧：
+
 1.	按照经验总结是：cURL 版本 >= libcurl/7.21.0 版本，毫秒级超时是一定生效的，切记。
 2.	curl_multi的毫秒级超时也有问题。。单次访问是支持ms级超时的，curl_multi并行调多个会不准
  
@@ -469,12 +470,12 @@ bool MemCacheProxy::_add(memcached_st* handle, unsigned int* key, const char* va
 {% endhighlight %}  
 //Memcache读取数据超时 (没有设置)
 libmemcahed 源码中接口定义：
-	`LIBMEMCACHED_API char *memcached_get(memcached_st *ptr,const char *key, size_t key_length,size_t *value_length,uint32_t *flags,memcached_return_t *error);`
-	`LIBMEMCACHED_API memcached_return_t memcached_mget(memcached_st *ptr,const char * const *keys,const size_t *key_length,size_t number_of_keys);`
+	LIBMEMCACHED_API char *memcached_get(memcached_st *ptr,const char *key, size_t key_length,size_t *value_length,uint32_t *flags,memcached_return_t *error);
+	LIBMEMCACHED_API memcached_return_t memcached_mget(memcached_st *ptr,const char * const *keys,const size_t *key_length,size_t number_of_keys);
  
 从接口中可以看出在读取数据的时候，是没有超时设置的。
    
-延伸阅读：
+延伸阅读：    
 <http://hi.baidu.com/chinauser/item/b30af90b23335dde73e67608>
 <http://libmemcached.org/libMemcached.html>
  
@@ -531,7 +532,7 @@ php socket 中实现原始的超时：(每次循环都当前时间去减，性�
 多路复用：复用模型是对多个IO操作进行检测，返回可操作集合，这样就可以对其进行操作了。这样就避免了阻塞IO不能随时处理各个IO和非阻塞占用系统资源的确定。
 ​ 
 使用 socket_select() 实现超时
-	`socket_select(..., floor($timeout), ceil($timeout*1000000));`
+	socket_select(..., floor($timeout), ceil($timeout*1000000));
 
 select的特点：能够设置到微秒级别的超时！
   
@@ -662,6 +663,7 @@ static void sig_alarm(int signo){return;}
 #### 使用异步复用IO使用 （毫秒级超时）
  
 异步IO执行流程：
+
 1. 首先将标志位设为Non-blocking模式，准备在非阻塞模式下调用connect函数
 2. 调用connect，正常情况下，因为TCP三次握手需要一些时间；而非阻塞调用只要不能立即完成就会返回错误，所以这里会返回EINPROGRESS，表示在建立连接但还没有完成。
 3. 在读套接口描述符集(fd_set rset)和写套接口描述符集(fd_set wset)中将当前套接口置位（用FD_ZERO()、FD_SET()宏），并设置好超时时间(struct timeval *timeout)
@@ -755,7 +757,7 @@ static void conn_select() {
  
 说明：在超时实现方面，不论是什么脚本语言：PHP、Python、Perl 基本底层都是C&C++的这些实现方式，需要理解这些超时处理，需要一些Linux 编程和网络编程的知识。
  
-延伸阅读：
+延伸阅读：   
 <http://blog.sina.com.cn/s/blog_4462f8560100tvgo.html>
 <http://blog.csdn.net/thimin/article/details/1530839>
 <http://hi.baidu.com/xjtdy888/item/93d9daefcc1d31d1ea34c992>
@@ -768,25 +770,18 @@ static void conn_select() {
  
 ## 总结
  
-1. PHP应用层如何设置超时?
-
+1.	PHP应用层如何设置超时?   
 PHP在处理超时层次有很多，不同层次，需要前端包容后端超时：
 浏览器（客户端） -> 接入层 -> Web服务器  -> PHP  -> 后端 (MySQL、Memcached）
  
-就是说，接入层（Web服务器层）的超时时间必须大于PHP（PHP-FPM）中设置的超时时间，不然后面没处理完，你前面就超时关闭了，这个会很杯具。还有就是PHP的超时时间要大于PHP本身访问后端（MySQL、HTTP、Memcached）的超时时间，不然结局同前面。
- 
-2. 超时设置原则是什么？
-
+就是说，接入层（Web服务器层）的超时时间必须大于PHP（PHP-FPM）中设置的超时时间，不然后面没处理完，你前面就超时关闭了，这个会很杯具。还有就是PHP的超时时间要大于PHP本身访问后端（MySQL、HTTP、Memcached）的超时时间，不然结局同前面。 
+2.	超时设置原则是什么？  
 如果是希望永久不超时的代码（比如上传，或者定期跑的程序），我仍然建议设置一个超时时间，比如12个小时这样的，主要是为了保证不会永久夯住一个php进程或者后端，导致无法给其他页面提供服务，最终引起所有机器雪崩。
-如果是要要求快速响应的程序，建议后端超时设置短一些，比如连接500ms，读1s，写1s，这样的速度，这样能够大幅度减少应用雪崩的问题，不会让服务器负载太高。
- 
-3. 自己开发超时访问合适吗？
-
-一般如果不是万不得已，建议用现有很多网络编程框架也好、基础库也好，里面一般都带有超时的实现，比如一些网络IO的lib库，尽量使用它们内置的，自己重复造轮子容易有bug，也不方便维护（不过如是是基于学习的目的就当别论了）。
- 
-4. 其他建议
-
+如果是要要求快速响应的程序，建议后端超时设置短一些，比如连接500ms，读1s，写1s，这样的速度，这样能够大幅度减少应用雪崩的问题，不会让服务器负载太高。 
+3.	自己开发超时访问合适吗？  
+一般如果不是万不得已，建议用现有很多网络编程框架也好、基础库也好，里面一般都带有超时的实现，比如一些网络IO的lib库，尽量使用它们内置的，自己重复造轮子容易有bug，也不方便维护（不过如是是基于学习的目的就当别论了）。 
+4.	其他建议  
 超时在所有应用里都是大问题，在开发应用的时候都要考虑到。我见过一些应用超时设置上百秒的，这种性能就委实差了，我举个例子：
 比如你php-fpm开了128个php-cgi进程，然后你的超时设置的是32s，那么我们如果后端服务比较差，极端情况下，那么最多每秒能响应的请求是：
-128 / 32 = 4个 
+128 / 32 = 4个    
 你没看错，1秒只能处理4个请求，那服务也太差了！虽然我们可以把php-cgi进程开大，但是内存占用，还有进程之间切换成本也会增加，cpu呀，内存呀都会增加，服务也会不稳定。所以，尽量设置一个合理的超时值，或者督促后端提高性能。

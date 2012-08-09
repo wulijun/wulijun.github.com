@@ -173,10 +173,9 @@ Nginx 的超时设置倒是非常清晰容易理解，上面超时针对不同�
  
 配置：php.ini 
 选项：
-max_execution_time = 30
- 
+max_execution_time = 30  
 或者在代码里设置：
-`ini_set("max_execution_time", 30);`
+`ini_set("max_execution_time", 30);`  
 `set_time_limit(30);`
  
 说明：
@@ -197,28 +196,27 @@ CURL 是我们常用的一种比较靠谱的访问HTTP协议接口的lib库，�
 CURL: 
 `curl_setopt($ch, opt)`可以设置一些超时的设置，主要包括：
  
-* (重要) CURLOPT_TIMEOUT 设置cURL允许执行的最长秒数。   
-* (重要) CURLOPT_TIMEOUT_MS 设置cURL允许执行的最长毫秒数。 (在cURL 7.16.2中被加入。从PHP 5.2.3起可使用。 )
- 
+*	(重要) CURLOPT_TIMEOUT 设置cURL允许执行的最长秒数。   
+*	(重要) CURLOPT_TIMEOUT_MS 设置cURL允许执行的最长毫秒数。 (在cURL 7.16.2中被加入。从PHP 5.2.3起可使用。 )   
 	CURLOPT_CONNECTTIMEOUT 在发起连接前等待的时间，如果设置为0，则无限等待。  
 	CURLOPT_CONNECTTIMEOUT_MS 尝试连接等待的时间，以毫秒为单位。如果设置为0，则无限等待。  在cURL 7.16.2中被加入。从PHP 5.2.3开始可用。  
 	CURLOPT_DNS_CACHE_TIMEOUT 设置在内存中保存DNS信息的时间，默认为120秒。  
  
 curl普通秒级超时：
 {% highlight php %}
-        $ch = curl_init(); 
-        curl_setopt($ch, CURLOPT_URL,$url); 
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1); 
-        curl_setopt($ch, CURLOPT_TIMEOUT, 60);   //只需要设置一个秒的数量就可以
-        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers); 
-        curl_setopt($ch, CURLOPT_USERAGENT, $defined_vars['HTTP_USER_AGENT']); 
+$ch = curl_init(); 
+curl_setopt($ch, CURLOPT_URL,$url); 
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1); 
+curl_setopt($ch, CURLOPT_TIMEOUT, 60);   //只需要设置一个秒的数量就可以
+curl_setopt($ch, CURLOPT_HTTPHEADER, $headers); 
+curl_setopt($ch, CURLOPT_USERAGENT, $defined_vars['HTTP_USER_AGENT']); 
 {% endhighlight %}  
 curl普通秒级超时使用：
-        `curl_setopt($ch, CURLOPT_TIMEOUT, 60);`
+	curl_setopt($ch, CURLOPT_TIMEOUT, 60);
 curl如果需要进行毫秒超时，需要增加：
-	`curl_easy_setopt(curl, CURLOPT_NOSIGNAL, 1L);` 
+	curl_easy_setopt(curl, CURLOPT_NOSIGNAL, 1L); 
  或者是：
-	`curl_setopt ( $ch,  CURLOPT_NOSIGNAL, true); 是可以支持毫秒级别超时设置的`
+	curl_setopt ( $ch,  CURLOPT_NOSIGNAL, true); 是可以支持毫秒级别超时设置的
    
 curl一个毫秒级超时的例子：
 {% highlight php %}
@@ -247,8 +245,8 @@ if (!isset($_GET['foo'])) {
 ?> 
 {% endhighlight %} 
 其他一些技巧：
-1. 按照经验总结是：cURL 版本 >= libcurl/7.21.0 版本，毫秒级超时是一定生效的，切记。
-2. curl_multi的毫秒级超时也有问题。。单次访问是支持ms级超时的，curl_multi并行调多个会不准
+1.	按照经验总结是：cURL 版本 >= libcurl/7.21.0 版本，毫秒级超时是一定生效的，切记。
+2.	curl_multi的毫秒级超时也有问题。。单次访问是支持ms级超时的，curl_multi并行调多个会不准
  
  
 #### 流处理方式访问HTTP

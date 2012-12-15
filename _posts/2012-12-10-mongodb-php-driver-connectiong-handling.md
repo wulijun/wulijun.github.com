@@ -8,76 +8,84 @@ tags: PHP MongoDB
 
 ##MongoDB PHP Driver的连接处理
 
-The 1.3 release series of the PHP MongoDB driver features a rewritten connection handling library. This is quite a large change and changes how the PHP driver deals with persistent connections and connection pooling.
+1.3版本的PHP MongoDB driver重写了连接处理库，和以前版本相比，在持久连接和连接池方面，都有了重大的变化。
 
-Connections in the 1.2 series
+### 1.2版本的连接管理
 
-The 1.2 release introduced connection pooling into the driver. This means that any time the driver needs to use a connection to run queries, it would request a connection from the pool. It would then later return the connection once it was done with it. Being done is defined as "the variable holding the connection object goes out of scope". To illustrate that, take for example the following scripts.
+1.2版本的驱动引入了连接池，在执行任何查询时，都会从连接池中请求一个连接，完成之后再归还给连接池。这里的完成是指持有该连接的变量离开了它的作用域，下面是一个示例。
 
-The simplest version:
+最简单的版本:
 
+{% highlight php %}
 <?php
-$m = new MongoClient();    // ← connection is requested from the pool
+$m = new MongoClient();    // ← 从连接池请求连接
 $c = $m->demo->test;
 $c->insert( array( 'test' => 'yes' ) );
 ?>
-← connection is returned to the pool as $m goes out of scope
+{% endhighlight %}
+← $m离开作用域，连接归还给连接池
 
-Inside a function:
+在函数中:
 
+{% highlight php %}
 <?php
 function doQuery()
 {
-        $m = new MongoClient();    // ← connection is requested from the pool
+        $m = new MongoClient();    // ← 从连接池请求连接
         $c = $m->demo->test;
         $c->insert( array( 'test' => 'yes' ) );
-} // ← connection is returned to the pool as $m goes out of scope
+} // ← $m离开作用域，连接归还给连接池
 ?>
+{% endhighlight %}
 
-Now, in a few cases, this can result in lots of connections being made. One common occurence is trying to use connections deep inside a model layer-which typically happens if you use ORMs/ODMs with complex structures having a link to your connection object. A simple variant of how this happens is:
+在某些情况下，系统可能会产生大量的连接，比如在ORMs/ODMs的某个复杂结构中引用连接对象，如下例子：
 
+{% highlight php %}
 <?php
 for ( $i = 0; $i < 5; $i++ )
 {
         $conns[] = new MongoClient();
-        }
-        // ← now we have 5 connections open
+}// ← 现在有5个连接
 ?>
+{% endhighlight %}
 
-Connections in the 1.3 series
+### 1.3版本的连接管理
 
-In the 1.3 series the connection management is done different. Per worker process (thread or PHP-FPM or Apache worker) the driver now manages connections in the C-part of driver separately from the Mongo* objects. This greatly reduces complexity in the driver. Let's have a look at how the driver handles connection for a basic MongoDB setups with just one node.
+在1.3版本中，连接管理做了很大改动。每个worker进程(线程、PHP-FPM或Apache worker)中，驱动把连接管理和Mongo*对象分离，降低驱动的复杂度。下面以单个节点的MongoDB实例来说明驱动如何处理连接。
 
+当一个worker进程启动，MongoDB驱动会为之初始化连接管理器管理连接，并且默认没有连接。
 
-When a worker process starts up, the MongoDB driver instantiates a manager to manage your connections. By default of course, this manager is rather sad, as it contains no connections yet.
+在第一个请求调用new MongoClient();时，驱动创建一个新连接，并且以一个哈希值标识这个连接。这个哈希值包括以下参数：主机名、端口，进程ID和可选的replica set名，如果是密码验证的连接，则还包括数据库名、用户名和密码的哈希值（对于密码验证的连接，我们后面再详细讨论）。调用MongoClient::getConnections()方法，可以查看连接对应的哈希值：
 
-Upon the first request doing new MongoClient();, the driver creates a new connection, and with this connection it creates a hash to identify this connection. Parameters for this hash includes: the hostname and the port, the process ID (pid), if available the replica set name and in case of authenticated connections, the database name, the username and a hash of the password. We will come back to authenticated connections later. You can quite easily see which hash is created, by calling the MongoClient::getConnections() method:
-
+{% highlight php %}
 <?php
 $m = new MongoClient( 'mongodb://whisky:27017/' );
 var_dump( $m->getConnections()[0]['hash'] );
 ?>
-Which outputs:
+{% endhighlight %}
 
-string(22) "whisky:27017;-;X;22835"
+输出:
 
-The - in this output denotes that the connection does not belong to a replica set and the X in this output is a place holder in case no username, database and password are given. 22835 is the process ID of the running script.
+> string(22) "whisky:27017;-;X;22835"
 
-This newly created connection is then registered with the manager:
+输出中的"-"表示该连接不属于某个replica set，"X"是没有用户名、数据库和密码时的占位符，22835是当前进程的进程ID。
 
+然后该连接会在连接管理器中注册：
+<img src="http://derickrethans.nl/images/content/manager-1con.png">
 
-Any time a connection is needed, for either an insert, delete, update, find or command query, the driver asks the manager to find a fitting connection to perform this query. It uses the information from the arguments to new MongoClient() as well as the PID of the current process to find this connection. Because the manager has a connection list per worker process/thread, and PHP's workers all run one request at a time, there is no need to have more than one connection per host. The connection gets reused and reused until the PHP worker ends, or you close the connection forcefully with MongoClient::close().
+在需要连接的任何时候，包括插入、删除、更新、查找或执行命令，驱动都会向管理器请求一个合适的连接来执行。请求连接时会用到new MongoClient()的参数和当前进程的ID。每个worker进程/线程，连接管理器都会有一个连接列表，而每个PHP worker同一时刻，只会运行一个请求，因此和每个MongoDB之间只需要一个连接，不断重用，直到PHP worker终止或显式调用MongoClient::close()关闭连接。
 
-Replica sets
+### Replica sets
 
-In a replicaset environment, this works all a bit different. In the connection string to new MongoClient() you need to specify a few hosts, preferrably all that you are aware of, as well as an annotation that you are using a replica set, for example:
+在存在复制集的环境中，情形有点不一样。new MongoClient()的连接字符串中，需要指定多个hosts，并标示当前正在实用复制集:
 
-$m = new MongoClient("mongodb://whisky:13000,whisky:13001/?replicaSet=seta");
+> $m = new MongoClient("mongodb://whisky:13000,whisky:13001/?replicaSet=seta");
 
-It is important that you specify the replicaSet argument, as without it the driver will assume you are connecting to three different mongos processes.
+其中的replicaSet参数不能省略，否则驱动会认为你是准备连接三个不同的mongos进程。
 
-Upon instantiation, the driver will discover the replica set's topology. The following output shows that all visible data nodes of the replica set will have a connection registered in the manager after the new MongoClient() call:
+在实例化时，驱动会检查复制集的拓扑结构。下面例子的输出，显示在调用new MongoClient()之后，复制集中所有可见的数据节点都会在管理器中注册一个连接:
 
+{% highlight php %}
 <?php
 $m = new MongoClient( 'mongodb://whisky:13001/?replicaSet=seta' );
 foreach ( $m->getConnections() as $c )
@@ -85,16 +93,19 @@ foreach ( $m->getConnections() as $c )
 	echo $c['hash'], "\n";
 }
 ?>
-Which outputs:
+{% endhighlight %}
+输出：
 
-whisky:13001;seta;X;32315
-whisky:13000;seta;X;32315
+> whisky:13001;seta;X;32315
+> whisky:13000;seta;X;32315
 
-Notice that the connection string made no reference to the whisky:13000 node. The manager has now registered two connections:
+虽然连接字符串中没有whisky:13000节点，但是管理器中已经注册了两个连接：
 
+<img src="http://derickrethans.nl/images/content/manager-replcon.png">
 
-The manager contains a bit more information than just the connection hash and the TCP/IP socket. It also knows which nodes are primary nodes, and how "far away" a specific node is. This script shows how to retrieve this additional information:
+管理器不仅包含连接的哈希值和TCP/IP socket，还保存哪个节点是主节点，以及每个节点的“距离"。下面的脚本显示了这些额外的信息；
 
+{% highlight php %}
 <?php
 $m = new MongoClient( 'mongodb://whisky:13001/?replicaSet=seta' );
 foreach ( $m->getConnections() as $c )
@@ -104,50 +115,57 @@ foreach ( $m->getConnections() as $c )
 		"{$c['connection']['ping_ms']} ms\n";
 }
 ?>
-Which outputs:
+{% endhighlight %}
 
-whisky:13001;seta;X;5776:
- - SECONDARY, 1 ms
-whisky:13000;seta;X;5776:
- - PRIMARY, 0 ms
+输出：
 
-The driver knows about two types of queries. Write queries, which involve insert, update, remove and commands, and read queries, which involves find and findOne. By default, the manager will always return a connection to a primary node, unless you use the new read preferences. I will be writing a separate post about read preferences, but the basic idea is that they can control from which replica set nodes data is read from. For now, we will only use the setSlaveOkay() equivalent directly in the connection string:
+> whisky:13001;seta;X;5776:
+>  - SECONDARY, 1 ms
+> whisky:13000;seta;X;5776:
+> - PRIMARY, 0 ms
 
-$m = new MongoClient("mongodb://whisky:13000,whisky:13001/?replicaSet=seta&readPreference=secondaryPreferred");
+驱动把操作分为两种类型：写操作，包括插入、更新、删除和命令；读操作，包括find和findOne。默认情况下，如果没有设置读偏好参数，管理器会一直返回主节点的连接。读偏好参数可以通过setSlaveOkay()设置，也可以在连接字符串中设置：
 
-As you can see, this connection string is rather long, which is why the PHP driver also allows you to pass in an array of options as second argument:
+> $m = new MongoClient("mongodb://whisky:13000,whisky:13001/?replicaSet=seta&readPreference=secondaryPreferred");
 
+加上这些参数后，连接字符串变得特别长，因此PHP驱动允许将选项放在数组中，作为第二个参数传入：
+
+{% highlight php %}
 $options = array(
         'replicaSet' => 'seta',
         'readPreference' => 'secondaryPreferred',
 );
 $m = new MongoClient("mongodb://whisky:13000,whisky:13001/", $options);
+{% endhighlight %}
 
-Per query, the driver will ask the manager for a fitting connection. For write queries, it will always pick a primary node, and for read queries it will pick a secondary node if they are available and not too "far away" (what that means, I'll again explain in my upcoming read preferences article).
+对于每个操作，驱动向管理器请求获取一个合适的连接。对于写操作，会一直返回主节点的连接；对于读操作，如果辅助节点可用且“距离”不远的话，则会返回该辅助节点的连接。
 
-Authenticated connections
+### 验证的连接
 
-If authentication is enabled on MongoDB, then the connection hash will start to include an authentication hash. This is to make sure that different scripts that use the same MongoDB server, but different user name/password/database combinations, do not inadvertently use a wrongly authenticated connection. Let's see what the hash turns into if we connect to the admin database with the admin user:
+如果MongoDB启用验证功能，那么连接的哈希值会包含验证相关的哈希值。这样不同脚本，使用不同的用户名、密码连接同一个MongoDB上的不同的数据库时，能够相互区分，而不会误用连接。下面示例使用admin用户名连接admin数据库，然后观察hash值的变化：
 
+{% highlight php %}
 <?php
 $m = new MongoClient( 'mongodb://admin:admin@whisky:27017/admin' );
 var_dump( $m->getConnections()[0]['hash'] );
 ?>
-Which outputs:
+{% endhighlight %}
+输出:
 
-string(64) "whisky:27017;-;admin/admin/bda5cc70cd5c23f7ffa1fda978ecbd30;8697"
+> string(64) "whisky:27017;-;admin/admin/bda5cc70cd5c23f7ffa1fda978ecbd30;8697"
 
-The X that we previously saw, has now been replaced by a string containing the database name admin, the user name admin and the hash bda5cc70cd5c23f7ffa1fda978ecbd30. This hash is created from the user name database and hashed password.
+以前示例中的"X"部分已经替换为一个包含数据库名admin、用户名admin和哈希值bda5cc70cd5c23f7ffa1fda978ecbd30，该哈希值是根据用户名、数据库名和密码哈希值计算得来。
 
-In order for authentication to work the driver needs to have the database name in the connection string (in our case admin), otherwise, it will default to admin.
+为了验证能够正确工作，需要在连接字符串中包含数据库名，否则会默认为admin。
 
-To use a database after you have established a connection, need to select the database again though. For example when you want to run a query:
+在建立连接后要使用数据库，需要先选择该数据库，如：
 
-$collection = $m->demoDb->collection;
-$collection->findOne();
+> $collection = $m->demoDb->collection;
+> $collection->findOne();
 
-If this database matches the database name in the connection string, or when the database name in the connection string was admin, everything is well. However, if the database name accessed as property of the connection object is different then the one specified in the connection string then the driver has to create a new connection to prevent leaking of authentication between multiple requests. The following example illustrates this:
+如果选择的数据库是连接字符串中指定的数据库，或者连接字符串中的数据库是admin，那么一切都会正常运行。否则，驱动会创建一个新的连接，从而防止验证被绕过，如下所示：
 
+{% highlight php %}
 <?php
 $m = new MongoClient( 'mongodb://user:user@whisky:27017/test' );
 
@@ -155,14 +173,16 @@ $db = $m->test2;
 $collection = $db->collection;
 var_dump( $collection->findOne() );
 ?>
-Which outputs:
+{% endhighlight %}
+输出:
 
-Fatal error: Uncaught exception 'MongoCursorException' with message
-'whisky:27017: unauthorized db:test2 ns:test2.collection lock type:0 client:127.0.0.1'
-in …/mongo-connect-5.php.txt:6
+> Fatal error: Uncaught exception 'MongoCursorException' with message
+> 'whisky:27017: unauthorized db:test2 ns:test2.collection lock type:0 client:127.0.0.1'
+> in …/mongo-connect-5.php.txt:6
 
-This is of course we have not actually authenticated for the test2 database. If we authenticate, then it works (even though findOne() does not actually find anything), and we can see all the created connections:
+因为我们的连接并没有执行test2数据库的授权验证，因而失败。如果我们执行验证，就会正常运行：
 
+{% highlight php %}
 <?php
 $m = new MongoClient( 'mongodb://user:user@whisky:27017/test' );
 
@@ -176,20 +196,23 @@ foreach ( $m->getConnections() as $c )
 	echo $c['hash'], "\n";
 }
 ?>
-Which outputs:
+{% endhighlight %}
+输出:
 
-whisky:27017;-;test/user/602b672e2fdcda7b58a042aeeb034376;26983
-whisky:27017;-;test2/user2/984b6b4fd6c33f49b73f026f8b47c0de;26983
+> whisky:27017;-;test/user/602b672e2fdcda7b58a042aeeb034376;26983
+> whisky:27017;-;test2/user2/984b6b4fd6c33f49b73f026f8b47c0de;26983
 
-And we have two authenticated connections in our manager:
-![](http://derickrethans.nl/images/content/manager-auth.png)
+现在管理器中有两个已验证的连接：
 
-But with one snag. If you have E_DEPRECATED notices turned on, you will see:
+<img src="http://derickrethans.nl/images/content/manager-auth.png">
 
-Deprecated: Function MongoDB::authenticate() is deprecated in …/mongo-connect-6.php.txt on line 5
+顺便提一句，如果你打开了E_DEPRECATED级别的错误提示，则会看到:
 
-The driver can do things much more optimised if you create two MongoClient objects instead:
+> Deprecated: Function MongoDB::authenticate() is deprecated in …/mongo-connect-6.php.txt on line 5
 
+驱动建议通过创建两个MongoClient对象完成该类任务：
+
+{% highlight php %}
 <?php
 $mTest1 = new MongoClient( 'mongodb://user:user@whisky:27017/test', array( 'connect' => false ) );
 $mTest2 = new MongoClient( 'mongodb://user2:user2@whisky:27017/test2', array( 'connect' => false ) );
@@ -202,6 +225,9 @@ foreach ( $mTest2->getConnections() as $c )
 	echo $c['hash'], "\n";
 }
 ?>
-With this, I conclude this post on the MongoDB driver's new connection handling. In future posts I will write about the 1.3 release providing (a lot) better debugging information, read preference functionality, and the new aggregation framework that comes with MongoDB 2.2.
+{% endhighlight %}
+
+单个MongoDB服务器能支持的并发连接相当有限，如果使用PHP-FPM的话，每个worker进程有自己独立的连接池，那么很容易达到连接数的上限。因此，在生产环境中，不管有没有使用复制集，都要部署mongos，然后PHP-FPM连接mongos，这样可以减少mongod的连接数，并且PHP-FPM和mongos之间可以使用短连接(即每个请求结束时都显式调用close函数关闭MongoDB连接)。
 
 原文链接：<http://derickrethans.nl/mongodb-connection-handling.html>
+

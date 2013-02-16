@@ -150,7 +150,7 @@ SELECT lastname, firstname FROM person
 ### 批量键访问(BKA)和多范围读(MRR)
 现在优化器把所有主键批量提供给存储引擎，使得它可以更有效的访问、排序和返回数据，减少查询执行时间。
 
-<img src="http://dev.mysql.com/tech-resources/articles/mysql-5.6/mysql_56_bka.png">
+<img src="http://dev.mysql.com/tech-resources/articles/mysql-5.6/mysql_56_bka.png" width="815" height="389">
 
 对于DBT-3 Query 13和其他磁盘密集型查询语句的测试显示，BKA和MRR最大可以提高280倍的性能。更多详情参考[Batched Key Access Speeds Up Disk-Bound Join Queries](http://oysteing.blogspot.com/2011/10/bacthed-key-access-speeds-up-disk-bound.html)。
 
@@ -185,11 +185,11 @@ DBA和开发者可以在线添加/删除索引和执行标准的InnoDB表修改�
 
 MySQL 5.6提供常见的Memcached API和InnoDB进行简单的KV操作。它在mysqld中包含了Memcached后台插件，通过Memcached协议直接和InnoDB原生API交互，绕过消耗很大的查询分析阶段，进行InnoDB数据的查询和执行兼容事务的数据更新。该API把Memcached功能集成在持久化、崩溃安全、事务型的数据库中，并兼容原有的标准Memcached库和客户端。实现如下图所示：
 
-<img src="http://dev.mysql.com/tech-resources/articles/mysql-5.6/mysql_56_nosql.png">
+<img src="http://dev.mysql.com/tech-resources/articles/mysql-5.6/mysql_56_nosql.png" width="595" height="350">
 
 这么做和普通SQL的性能差距有多大？内部性能测试显示，针对某些场景，SET/INSERT操作可以提高9倍的吞吐量：
 
-<img src="http://dev.mysql.com/tech-resources/articles/mysql-5.6/mysql_56_nosql_benchmarks.png">
+<img src="http://dev.mysql.com/tech-resources/articles/mysql-5.6/mysql_56_nosql_benchmarks.png" width="644" height="347">
 
 这对开发者和DBA而言，不仅可以提高性能和灵活性，还可以减少复杂性，原来分离的cache和数据库层，现在可以放在一个数据层中，还能解决数据一致性的问题。
 
@@ -255,7 +255,7 @@ MySQL 5.6版本提供一组Python编写的用于管理和监控主从复制的�
 ### 新增多线程从库
 根据Schema划分工作线程，允许并行更新。对于那些使用不同数据库分割应用的系统，效率可以获得很大的提升，如多租户单实例系统(multi-tenant systems)。
 
-<img src="http://dev.mysql.com/tech-resources/articles/mysql-5.6/mysql_56_mts.png">
+<img src="http://dev.mysql.com/tech-resources/articles/mysql-5.6/mysql_56_mts.png" width="600" height="367">
 
 SysBench benchmarks在10个Schema上使用多个工作线程的测试结果表明，性能可以最大提升5倍左右。
 
@@ -326,7 +326,7 @@ MySQL 5.6 introduces a major overhaul to how passwords are internally handled an
 
 The addressable items for each are:
 
-<img src="http://dev.mysql.com/tech-resources/articles/mysql-5.6/mysql_56_diagnostics.png">
+<img src="http://dev.mysql.com/tech-resources/articles/mysql-5.6/mysql_56_diagnostics.png" width="600" height="320">
 
 The new GET DIAGNOSTICS command provides a standard interface into the Diagnostics Area and can be used via the CLI or from within application code to easily retrieve and handle the results of the most recent statement execution:
 

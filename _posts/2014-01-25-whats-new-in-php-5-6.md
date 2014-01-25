@@ -30,13 +30,14 @@ echo C::SENTENCE;
 
 {% endhighlight %}
 上面代码输出：
+
 	4
 	The value of THREE is 3
 
 ## 可变参数函数(Variadic functions via ...)
 
 [可变参数函数](http://docs.php.net/manual/en/functions.arguments.php#functions.variable-arg-list)的实现，
-不再依赖func_get_args()函数，现在可以通过新增的操作符·...·更简洁地实现。
+不再依赖func_get_args()函数，现在可以通过新增的操作符`...`更简洁地实现。
 
 {% highlight php %}
 <?php
@@ -54,6 +55,7 @@ f(1, 2, 3, 4, 5);
 
 {% endhighlight %}
 上面代码输出：
+
 	$req: 1; $opt: 0; number of params: 0
 	$req: 1; $opt: 2; number of params: 0
 	$req: 1; $opt: 2; number of params: 1
@@ -62,7 +64,7 @@ f(1, 2, 3, 4, 5);
 
 ## 参数解包功能(Argument unpacking via ...)
 
-在调用函数的时候，通过·...·操作符可以把数组或者可遍历对象解包到参数列表，这和Ruby等语言中的扩张(splat)操作符类似。
+在调用函数的时候，通过`...`操作符可以把数组或者可遍历对象解包到参数列表，这和Ruby等语言中的扩张(splat)操作符类似。
 
 {% highlight php %}
 <?php
@@ -75,11 +77,12 @@ echo add(1, ...$operators);
 
 {% endhighlight %}
 上面代码输出：
+
 	6
 
 ## 导入函数和常量(use function and use const)
 
-·use·操作符开始支持函数和常量的导入。·use function·和·use const·结构的用法的示例：
+`use`操作符开始支持函数和常量的导入。`use function`和`use const`结构的用法的示例：
 {% highlight php %}
 <?php
 namespace Name\Space {
@@ -96,6 +99,7 @@ namespace {
 }
 {% endhighlight %}
 上面代码输出：
+
 	42
 	Name\Space\f
 
@@ -105,7 +109,7 @@ PHP自带了一个交互式调试器phpdbg，它是一个SAPI模块，更多信�
 
 ## php://input可以被复用
 
-·php://input·开始支持多次打开和读取，这给处理POST数据的模块的内存占用带来了极大的改善。
+`php://input`开始支持多次打开和读取，这给处理POST数据的模块的内存占用带来了极大的改善。
 
 ## 大文件上传支持
 
@@ -132,11 +136,11 @@ var_dump(42 + $b);
 
 ## 新增gost-crypto哈希算法
 
-采用CryptoPro S-box tables实现了·gost-crypto·哈希算法，详情参考[RFC 4357, section 11.2](http://www.faqs.org/rfcs/rfc4357)。
+采用CryptoPro S-box tables实现了`gost-crypto`哈希算法，详情参考[RFC 4357, section 11.2](http://www.faqs.org/rfcs/rfc4357)。
 
 ## SSL/TLS改进
 
-OpenSSL扩展新增证书指纹的提取和验证功能，·openssl_x509_fingerprint()·用于提取X.509证书的指纹，SSL stream context 选项: ·capture_peer_cert·
-用于获取对方X.509证书；·peer_fingerprint·用于断言对方证书和给定的指纹匹配。
+OpenSSL扩展新增证书指纹的提取和验证功能，`openssl_x509_fingerprint()`用于提取X.509证书的指纹，SSL stream context 选项: `capture_peer_cert`
+用于获取对方X.509证书；`peer_fingerprint`用于断言对方证书和给定的指纹匹配。
 
-另外，可以通过SSL流上下文选项·crypto_method·指定加密方法，如SSLv3或TLS，目前支持的选项值包括STREAM_CRYPTO_METHOD_SSLv2_CLIENT, STREAM_CRYPTO_METHOD_SSLv3_CLIENT, STREAM_CRYPTO_METHOD_SSLv23_CLIENT (默认), or STREAM_CRYPTO_METHOD_TLS_CLIENT。
+另外，可以通过SSL流上下文选项`crypto_method`指定加密方法，如SSLv3或TLS，目前支持的选项值包括STREAM_CRYPTO_METHOD_SSLv2_CLIENT, STREAM_CRYPTO_METHOD_SSLv3_CLIENT, STREAM_CRYPTO_METHOD_SSLv23_CLIENT (默认), or STREAM_CRYPTO_METHOD_TLS_CLIENT。

@@ -8,13 +8,13 @@ feed:             /atom.xml
 author:
     name:         风之缘
     email:        wulijun01234@gmail.com
-description:      "风之缘的博客，主要分享关于PHP语言, PHP扩展, Zend引擎, PHP Runtime，JavaScript等Web开发相关技术,新闻和最新动态，以及记录对互联网行业的思考和分析。"
-keywords: "PHP,PHP源码分析,PHP扩展,PHP扩展开发,PHP教程,PHP扩展开发教程,PHP内核,PHP内核分析,PHP Runtime,Zend,Zend Engine,PHP Extension,Javascript,CSS,LAMP,风之缘,wulijun01234"
-about: 			  "PHP开发者,关注Nginx,PHP等Web开发技术的发展与应用"
+description:      "风之缘的博客，区块链,数字货币,AI,Golang,PHP等相关技术的研究和新闻分享，以及记录对互联网行业的思考和分析。"
+keywords: "blockchain,bitcoin,AI,eos,ipfs,sia,Lightning Network,Digital Currency,Cryptocurrency,PHP,PHP扩展,PHP内核,PHP内核分析,PHP Runtime,PHP Extension,风之缘,wulijun,wulijun01234"
+about: 			  "互联网老兵,关注区块链,AI,Golang,PHP等技术的发展与应用"
 follow:
     github:       https://github.com/wulijun
 
 
 style: 			 /css/style.css
 blogName: 		  风之缘
-blogDesc: 		 "PHP语言,PHP扩展,JavaScript等Web开发相关的研究,技术,新闻分享"
+blogDesc: 		 "区块链,数字货币,AI,Golang,PHP等相关技术的研究和新闻分享，以及记录对互联网行业的思考和分析。"

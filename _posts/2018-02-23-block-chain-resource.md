@@ -6,4 +6,17 @@ tags: bitcoin blockchain ethereum eos eth
 ---
 
 ## gitbook
-[Mastering Ethereum - 精通以太坊](https://github.com/ethereumbook/ethereumbook)
+1. [Mastering Ethereum - 精通以太坊](https://github.com/ethereumbook/ethereumbook)
+
+## DApp
+1. [Ethlance - 基于区块链的自由职业平台](https://ethlance.com/)
+
+## White paper
+1. [Decentralizing e-commerce - 去中心化电子商务平台](https://github.com/CyberMiles/cybermiles/blob/master/whitepaper/whitepaper_technical.md)
+2. [比特币白皮书]()
+3. [以太坊白皮书]()
+4. [EOS白皮书]()
+5. [R3 Corda]()
+6. [iota]()
+7. [byteball]()
+8. [ripple]

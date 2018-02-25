@@ -1,5 +1,5 @@
 markdown:         rdiscount
-pygments:         true
+highlighter:         rouge
 paginate:         4
 
 title:            风之缘的博客

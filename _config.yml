@@ -1,9 +1,9 @@
-markdown:         rdiscount
+markdown:         kramdown
 highlighter:         rouge
 paginate:         4
 
 title:            风之缘的博客
-url:              http://wulijun.github.com
+url:              https://wulijun.github.io/
 feed:             /atom.xml
 author:
     name:         风之缘
